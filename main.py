@@ -1,4 +1,3 @@
-
 import asyncio
 from playwright.async_api import async_playwright
 import requests
@@ -22,21 +21,25 @@ def fetch_kucoin_chart(symbol="BTC-USDT", interval="1min", limit=30):
 
 def analyze_with_gemini(chart_data, token_name):
     GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
+    
     prompt = (
         f"Analyze the following crypto candlestick chart for {token_name} (USDT pair). "
         f"Each row includes: time, open, close, low, high, volume. "
         f"Based on short-term patterns, provide a clear BUY, SELL, or HOLD signal, and briefly explain why.\n\n"
-        f"Chart data:\n" + 
+        f"Chart data:\n" +
         "\n".join([",".join(row) for row in chart_data[:20]])
     )
+
     payload = {
         "contents": [{
             "parts": [{"text": prompt}]
         }]
     }
+
     headers = {
         "Content-Type": "application/json"
     }
+
     try:
         response = requests.post(GEMINI_URL, json=payload, headers=headers)
         return response.json()["candidates"][0]["content"]["parts"][0]
@@ -75,12 +78,12 @@ async def run_bot():
 
                 result = analyze_with_gemini(chart_data, token.upper())
                 if isinstance(result, dict) and "text" in result:
-                    msg = f"📊 تحلیل Gemini برای {token.upper()}:
-{result['text']}"
+                    msg = f"📊 تحلیل Gemini برای {token.upper()}:\n{result['text']}"
                 else:
                     msg = f"❌ خطا در تحلیل Gemini برای {token.upper()}: {result.get('error', 'نامشخص')}"
 
                 send_telegram_message(msg)
+
         await browser.close()
 
 if __name__ == "__main__":

@@ -55,11 +55,11 @@ async def run_bot():
         await page.goto("https://intel.arkm.com", timeout=60000)
         await page.wait_for_timeout(10000)
 
-        # تلاش برای کلیک روی فیلترها با استفاده از XPath
+        # استفاده از get_by_role برای کلیک روی فیلترها
         try:
-            await page.locator("//div[contains(text(), 'USD') and contains(text(), '1.00')]").click(timeout=10000)
-            await page.locator("//div[contains(text(), 'VALUE') and contains(text(), '0.1')]").click(timeout=10000)
-            await page.locator("//button[contains(text(), '1H')]").click(timeout=10000)
+            await page.get_by_role("button", name="USD ≥ $1.00K").click(timeout=10000, force=True)
+            await page.get_by_role("button", name="VALUE ≥ 0.1").click(timeout=10000, force=True)
+            await page.get_by_role("button", name="1H").click(timeout=10000, force=True)
         except Exception as e:
             await page.screenshot(path="filter_error.png")
             send_telegram_message("❌ نتونستم فیلترها رو در Arkham اعمال کنم. خطا:\n" + str(e))

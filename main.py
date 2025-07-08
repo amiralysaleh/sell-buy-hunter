@@ -55,9 +55,17 @@ async def run_bot():
         await page.goto("https://intel.arkm.com", timeout=60000)
         await page.wait_for_timeout(10000)
 
-        await page.click("text=USD ≥ $1.00K")
-        await page.click("text=VALUE ≥ 0.1")
-        await page.click("text=1H")
+        # تلاش برای کلیک روی فیلترها با کنترل خطا
+        try:
+            await page.locator("text=USD ≥ $1.00K").click(timeout=10000)
+            await page.locator("text=VALUE ≥ 0.1").click(timeout=10000)
+            await page.locator("text=1H").click(timeout=10000)
+        except Exception as e:
+            await page.screenshot(path="filter_error.png")
+            send_telegram_message("❌ نتونستم فیلترها رو در Arkham اعمال کنم. خطا:\n" + str(e))
+            await browser.close()
+            return
+
         await page.wait_for_timeout(5000)
 
         token_elements = await page.query_selector_all("div[class*='TokenSymbol']")
@@ -73,7 +81,7 @@ async def run_bot():
                 kucoin_symbol = f"{token.upper()}-USDT"
                 chart_data = fetch_kucoin_chart(kucoin_symbol)
                 if not chart_data:
-                    send_telegram_message(f"⚠️ No chart data for {kucoin_symbol}")
+                    send_telegram_message(f"⚠️ چارت برای {kucoin_symbol} یافت نشد.")
                     continue
 
                 result = analyze_with_gemini(chart_data, token.upper())

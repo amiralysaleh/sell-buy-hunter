@@ -51,34 +51,20 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # تلاش برای یافتن و کلیک روی دکمه فیلتر USD
-            usd_filters = await page.locator("div:has-text('USD')").all()
-            clicked = False
-            for el in usd_filters:
-                try:
-                    await el.click(timeout=3000, force=True)
-                    # بررسی اینکه popup فیلتر باز شده
-                    await page.wait_for_selector("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input", timeout=5000)
-                    clicked = True
-                    break
-                except:
-                    continue
-            if not clicked:
-                raise Exception("❌ نتونستم روی هیچ فیلتر USD کلیک کنم.")
+            # کلیک روی آیکون فیلتر کنار ستون VALUE
+            await page.locator("div:has-text('VALUE') svg").first.click(timeout=5000, force=True)
 
-            # مقداردهی به FROM با استفاده از XPath دقیق
-            await page.locator("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input").fill("1000")
+            # وارد کردن مقدار از طریق XPath دقیق
+            await page.wait_for_selector("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input", timeout=10000)
+            await page.locator("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input").fill("0.1")
             await page.keyboard.press("Enter")
 
-            # کلیک روی فیلتر VALUE ≥ 0.1
-            await page.get_by_role("button", name="VALUE ≥ 0.1").click(timeout=10000, force=True)
-
-            # کلیک روی بازه زمانی 1H
+            # انتخاب بازه زمانی 1H
             await page.get_by_role("button", name="1H").click(timeout=10000, force=True)
 
         except Exception as e:
-            await page.screenshot(path="filter_error.png")
-            send_telegram_message("❌ نتونستم فیلترها رو در Arkham اعمال کنم. خطا:\n" + str(e))
+            await page.screenshot(path="filter_click_error.png")
+            send_telegram_message("❌ نتونستم فیلتر VALUE رو کلیک کنم یا فیلد لود نشد.\n" + str(e))
             await browser.close()
             return
 

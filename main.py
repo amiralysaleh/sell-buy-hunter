@@ -51,18 +51,29 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # کلیک روی فیلتر USD از طریق XPath دقیق
-            await page.locator("//div[contains(@class, 'Filter_filterTitle') and contains(text(), 'USD')]").first.click(timeout=10000)
+            # تلاش برای یافتن و کلیک روی دکمه فیلتر USD
+            usd_filters = await page.locator("div:has-text('USD')").all()
+            clicked = False
+            for el in usd_filters:
+                try:
+                    await el.click(timeout=3000, force=True)
+                    # بررسی اینکه popup فیلتر باز شده
+                    await page.wait_for_selector("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input", timeout=5000)
+                    clicked = True
+                    break
+                except:
+                    continue
+            if not clicked:
+                raise Exception("❌ نتونستم روی هیچ فیلتر USD کلیک کنم.")
 
-            # وارد کردن مقدار 1000 در فیلد FROM با استفاده از XPath دقیق input
-            await page.wait_for_selector("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input", timeout=20000)
+            # مقداردهی به FROM با استفاده از XPath دقیق
             await page.locator("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input").fill("1000")
             await page.keyboard.press("Enter")
 
             # کلیک روی فیلتر VALUE ≥ 0.1
             await page.get_by_role("button", name="VALUE ≥ 0.1").click(timeout=10000, force=True)
 
-            # انتخاب بازه زمانی 1H
+            # کلیک روی بازه زمانی 1H
             await page.get_by_role("button", name="1H").click(timeout=10000, force=True)
 
         except Exception as e:

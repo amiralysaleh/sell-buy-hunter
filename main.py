@@ -21,7 +21,6 @@ def fetch_kucoin_chart(symbol="BTC-USDT", interval="1min", limit=30):
 
 def analyze_with_gemini(chart_data, token_name):
     GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
-
     prompt = (
         f"Analyze the following crypto candlestick chart for {token_name} (USDT pair). "
         f"Each row includes: time, open, close, low, high, volume. "
@@ -29,17 +28,12 @@ def analyze_with_gemini(chart_data, token_name):
         f"Chart data:\n" +
         "\n".join([",".join(row) for row in chart_data[:20]])
     )
-
     payload = {
         "contents": [{
             "parts": [{"text": prompt}]
         }]
     }
-
-    headers = {
-        "Content-Type": "application/json"
-    }
-
+    headers = { "Content-Type": "application/json" }
     try:
         response = requests.post(GEMINI_URL, json=payload, headers=headers)
         return response.json()["candidates"][0]["content"]["parts"][0]
@@ -56,18 +50,23 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # 1. کلیک روی فیلتر USD از طریق متن (نه role)
-            await page.locator("div:has-text('USD')").first.click(timeout=10000)
+            # باز کردن فیلتر USD با استفاده از متن یا لیست
+            filters = await page.locator("div[class*=Filter_filterBadge]").all()
+            for f in filters:
+                text = await f.inner_text()
+                if "USD" in text:
+                    await f.click(force=True)
+                    break
 
-            # 2. صبر برای نمایش فیلد FROM و مقداردهی
+            # وارد کردن مقدار 1000 در فیلد FROM
             await page.wait_for_selector("input[placeholder='No minimum']", timeout=10000)
-            await page.locator("input[placeholder='No minimum']").fill("1000")
+            await page.locator("input[placeholder='No minimum']").first.fill("1000")
             await page.keyboard.press("Enter")
 
-            # 3. کلیک روی فیلتر VALUE ≥ 0.1
+            # کلیک روی فیلتر VALUE ≥ 0.1
             await page.get_by_role("button", name="VALUE ≥ 0.1").click(timeout=10000, force=True)
 
-            # 4. کلیک روی بازه زمانی 1H
+            # کلیک روی بازه زمانی 1H
             await page.get_by_role("button", name="1H").click(timeout=10000, force=True)
 
         except Exception as e:
@@ -79,12 +78,8 @@ async def run_bot():
         await page.wait_for_timeout(5000)
 
         token_elements = await page.query_selector_all("div[class*='TokenSymbol']")
-        tokens = []
-        for el in token_elements:
-            text = await el.inner_text()
-            tokens.append(text.strip())
-
-        token_counts = Counter(tokens)
+        tokens = [await el.inner_text() for el in token_elements]
+        token_counts = Counter([t.strip() for t in tokens])
 
         for token, count in token_counts.items():
             if count >= 5:
@@ -93,13 +88,11 @@ async def run_bot():
                 if not chart_data:
                     send_telegram_message(f"⚠️ چارت برای {kucoin_symbol} یافت نشد.")
                     continue
-
                 result = analyze_with_gemini(chart_data, token.upper())
                 if isinstance(result, dict) and "text" in result:
                     msg = f"📊 تحلیل Gemini برای {token.upper()}:\n{result['text']}"
                 else:
                     msg = f"❌ خطا در تحلیل Gemini برای {token.upper()}: {result.get('error', 'نامشخص')}"
-
                 send_telegram_message(msg)
 
         await browser.close()

@@ -1,3 +1,4 @@
+
 import asyncio
 from playwright.async_api import async_playwright
 import requests
@@ -50,21 +51,10 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # پیدا کردن اولین فیلتر که شامل کلمه USD باشه
-            filters = await page.locator("div[class*=Filter_filterBadge]").all()
-            usd_filter = None
-            for f in filters:
-                text = await f.inner_text()
-                if "USD" in text:
-                    usd_filter = f
-                    break
+            # باز کردن فیلتر USD از بالای جدول
+            await page.locator("button:has-text('USD')").first.click(timeout=10000)
 
-            if usd_filter is None:
-                raise Exception("فیلتر USD پیدا نشد")
-
-            await usd_filter.click(force=True)
-
-            # صبر برای نمایش input از داخل popup فیلتر
+            # وارد کردن مقدار 1000 در FROM
             await page.wait_for_selector("#floating-ui-root input[placeholder='No minimum']", timeout=10000)
             await page.locator("#floating-ui-root input[placeholder='No minimum']").fill("1000")
             await page.keyboard.press("Enter")

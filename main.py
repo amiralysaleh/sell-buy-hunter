@@ -51,12 +51,12 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # کلیک روی آیکون فیلتر کنار ستون VALUE
+            # کلیک روی آیکون فیلتر کنار VALUE
             await page.locator("div:has-text('VALUE') svg").first.click(timeout=5000, force=True)
 
-            # وارد کردن مقدار از طریق XPath دقیق
-            await page.wait_for_selector("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input", timeout=10000)
-            await page.locator("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input").fill("0.1")
+            # منتظر ظاهر شدن input فیلتر FROM با class پایدار
+            await page.wait_for_selector("div.Filter_valueInputsContainer__uaDR5 input[placeholder*='No minimum']", timeout=10000)
+            await page.locator("div.Filter_valueInputsContainer__uaDR5 input[placeholder*='No minimum']").fill("0.1")
             await page.keyboard.press("Enter")
 
             # انتخاب بازه زمانی 1H

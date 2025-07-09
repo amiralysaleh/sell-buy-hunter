@@ -56,8 +56,8 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # مقداردهی دقیق به input USD با استفاده از CSS selector دقیق
-            await page.locator("#floating-ui-root > div > div > div > div.Filter_valueInputsContainer__uaDR5 > div:nth-child(1) > input").fill("1000")
+            # مقداردهی به فیلتر USD با استفاده از placeholder دقیق
+            await page.locator("input[placeholder='No minimum']").fill("1000")
             await page.keyboard.press("Enter")
 
             # کلیک روی VALUE ≥ 0.1

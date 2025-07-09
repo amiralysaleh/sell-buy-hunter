@@ -56,14 +56,20 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # مقداردهی به فیلتر USD با استفاده از placeholder دقیق
+            # 1. کلیک روی دکمه فیلتر USD
+            await page.get_by_role("button", name="USD ≥ $1.00K").click(timeout=10000, force=True)
+
+            # 2. صبر برای لود input مربوط به FROM
+            await page.wait_for_selector("input[placeholder='No minimum']", timeout=10000)
+
+            # 3. مقداردهی به فیلتر FROM
             await page.locator("input[placeholder='No minimum']").fill("1000")
             await page.keyboard.press("Enter")
 
-            # کلیک روی VALUE ≥ 0.1
+            # 4. کلیک روی VALUE ≥ 0.1
             await page.get_by_role("button", name="VALUE ≥ 0.1").click(timeout=10000, force=True)
 
-            # کلیک روی بازه 1H
+            # 5. کلیک روی بازه 1H
             await page.get_by_role("button", name="1H").click(timeout=10000, force=True)
 
         except Exception as e:

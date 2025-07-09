@@ -51,10 +51,11 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # باز کردن فیلتر USD از بالای جدول
-            await page.locator("button:has-text('USD')").first.click(timeout=10000)
+            # پیدا کردن و کلیک روی اولین element دارای متن USD
+            usd_element = page.locator("div:has-text('USD')").first
+            await usd_element.click(timeout=10000)
 
-            # وارد کردن مقدار 1000 در FROM
+            # مقداردهی فیلد FROM = 1000
             await page.wait_for_selector("#floating-ui-root input[placeholder='No minimum']", timeout=10000)
             await page.locator("#floating-ui-root input[placeholder='No minimum']").fill("1000")
             await page.keyboard.press("Enter")
@@ -62,7 +63,7 @@ async def run_bot():
             # کلیک روی فیلتر VALUE ≥ 0.1
             await page.get_by_role("button", name="VALUE ≥ 0.1").click(timeout=10000, force=True)
 
-            # کلیک روی بازه زمانی 1H
+            # انتخاب بازه زمانی 1H
             await page.get_by_role("button", name="1H").click(timeout=10000, force=True)
 
         except Exception as e:

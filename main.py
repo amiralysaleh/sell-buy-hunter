@@ -21,7 +21,7 @@ def fetch_kucoin_chart(symbol="BTC-USDT", interval="1min", limit=30):
 
 def analyze_with_gemini(chart_data, token_name):
     GEMINI_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={GEMINI_API_KEY}"
-    
+
     prompt = (
         f"Analyze the following crypto candlestick chart for {token_name} (USDT pair). "
         f"Each row includes: time, open, close, low, high, volume. "
@@ -56,20 +56,18 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # 1. کلیک روی دکمه فیلتر USD
-            await page.get_by_role("button", name="USD ≥ $1.00K").click(timeout=10000, force=True)
+            # 1. کلیک روی فیلتر USD از طریق متن (نه role)
+            await page.locator("div:has-text('USD')").first.click(timeout=10000)
 
-            # 2. صبر برای لود input مربوط به FROM
+            # 2. صبر برای نمایش فیلد FROM و مقداردهی
             await page.wait_for_selector("input[placeholder='No minimum']", timeout=10000)
-
-            # 3. مقداردهی به فیلتر FROM
             await page.locator("input[placeholder='No minimum']").fill("1000")
             await page.keyboard.press("Enter")
 
-            # 4. کلیک روی VALUE ≥ 0.1
+            # 3. کلیک روی فیلتر VALUE ≥ 0.1
             await page.get_by_role("button", name="VALUE ≥ 0.1").click(timeout=10000, force=True)
 
-            # 5. کلیک روی بازه 1H
+            # 4. کلیک روی بازه زمانی 1H
             await page.get_by_role("button", name="1H").click(timeout=10000, force=True)
 
         except Exception as e:

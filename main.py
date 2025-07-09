@@ -51,13 +51,12 @@ async def run_bot():
         await page.wait_for_timeout(10000)
 
         try:
-            # پیدا کردن و کلیک روی اولین element دارای متن USD
-            usd_element = page.locator("div:has-text('USD')").first
-            await usd_element.click(timeout=10000)
+            # کلیک روی فیلتر USD از طریق XPath دقیق
+            await page.locator("//div[contains(@class, 'Filter_filterTitle') and contains(text(), 'USD')]").first.click(timeout=10000)
 
-            # مقداردهی فیلد FROM = 1000
-            await page.wait_for_selector("#floating-ui-root input[placeholder='No minimum']", timeout=10000)
-            await page.locator("#floating-ui-root input[placeholder='No minimum']").fill("1000")
+            # وارد کردن مقدار 1000 در فیلد FROM با استفاده از XPath دقیق input
+            await page.wait_for_selector("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input", timeout=20000)
+            await page.locator("xpath=/html/body/div[2]/div/div/div/div[1]/div[1]/input").fill("1000")
             await page.keyboard.press("Enter")
 
             # کلیک روی فیلتر VALUE ≥ 0.1

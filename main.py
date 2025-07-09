@@ -55,11 +55,17 @@ async def run_bot():
         await page.goto("https://intel.arkm.com", timeout=60000)
         await page.wait_for_timeout(10000)
 
-        # استفاده از get_by_role برای کلیک روی فیلترها
         try:
-            await page.get_by_role("button", name="USD ≥ $1.00K").click(timeout=10000, force=True)
+            # مقداردهی دقیق به input USD با استفاده از CSS selector دقیق
+            await page.locator("#floating-ui-root > div > div > div > div.Filter_valueInputsContainer__uaDR5 > div:nth-child(1) > input").fill("1000")
+            await page.keyboard.press("Enter")
+
+            # کلیک روی VALUE ≥ 0.1
             await page.get_by_role("button", name="VALUE ≥ 0.1").click(timeout=10000, force=True)
+
+            # کلیک روی بازه 1H
             await page.get_by_role("button", name="1H").click(timeout=10000, force=True)
+
         except Exception as e:
             await page.screenshot(path="filter_error.png")
             send_telegram_message("❌ نتونستم فیلترها رو در Arkham اعمال کنم. خطا:\n" + str(e))
